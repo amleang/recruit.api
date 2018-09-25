@@ -3,6 +3,10 @@ const Controller = require('egg').Controller;
 const svgCaptcha = require('svg-captcha');
 const md5 = require('md5');
 const tip = require("../lib/tip")
+const {
+    whereObject,
+    sqlWhereCount
+} = require("../lib/utils")
 class UserController extends Controller {
     /**
      * 用户登录
@@ -55,24 +59,38 @@ class UserController extends Controller {
     async list() {
         const ctx = this.ctx;
         const params = ctx.query;
-        params.pageNo = params.pageNo || 1;
-        params.pageSize = params.pageSize || 10;
-        let offset = (params.pageNo - 1) * params.pageSize;
-        const results = await.this.app.mysql.select("user", {
-            where: {},
-            columns: [],
+        params.page = params.page || 1;
+        params.size = params.size || 10;
+        let offset = (params.page - 1) * params.size;
+        const where = whereObject(params);
+        const countWhere = sqlWhereCount("v_user_role_ent", where);
+        const results = await this.app.mysql.select("v_user_role_ent", {
+            where: where,
             orders: [
                 ['createAt', 'desc']
             ],
-            limit: params.pageSize,
+            limit: params.size,
             offset: offset
-        })
+        });
+        const count = await this.app.mysql.query(countWhere);
+        ctx.body = { ...tip[200],
+            data: results,
+            count: count[0].count
+        };
     }
     /**
      * 获取单条
      */
     async item() {
-
+        const ctx = this.ctx;
+        const id = ctx.params.id;
+        console.log(ctx.params);
+        const form = await this.app.mysql.get("user", {
+            id: id
+        });
+        this.ctx.body = { ...tip[200],
+            data: form
+        };
     }
     /**
      * 插入
@@ -81,12 +99,32 @@ class UserController extends Controller {
         const ctx = this.ctx;
         const form = ctx.request.body;
         const result = await this.app.mysql.insert("user", form);
+        if (result.affectedRows  > 0) {
+            ctx.body = { ...tip[200],
+                data: true
+            };
+        } else {
+            ctx.body = { ...tip[2002],
+                data: false
+            };
+        }
     }
     /**
      * 修改
      */
     async update() {
-
+        const ctx = this.ctx;
+        const form = ctx.query;
+        const result = await this.app.mysql.update("user", form);
+        if (result.affectedRows  > 0) {
+            ctx.body = { ...tip[200],
+                data: true
+            };
+        } else {
+            ctx.body = { ...tip[2003],
+                data: false
+            };
+        }
     }
 }
 module.exports = UserController;
