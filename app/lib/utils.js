@@ -1,5 +1,22 @@
 const _ = require('lodash');
 /**
+ * 验证登录是否失效
+ * @param {*} ctx 
+ */
+const cookiesValid = function (ctx) {
+    let res = true;
+    let cookies = ctx.cookies.get("recrit-ck");
+    if (!cookies) {
+        ctx.body = {
+            code: 1003,
+            msg: '登录失效,请重新登录'
+        }
+        res = false;
+    }
+    return res;
+}
+
+/**
  * where 条件
  * @param {} where 
  */
@@ -34,6 +51,7 @@ const sqlWhereCount = function (tableName, clumns) {
 }
 
 module.exports = {
+    cookiesValid,
     whereObject,
     sqlWhereCount
 }

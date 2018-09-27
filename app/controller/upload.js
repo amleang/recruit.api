@@ -1,32 +1,42 @@
 "use strict";
-const fs = require("fs");
-const path = require("path");
-const formidable = require("formidable");
-
+//node.js 文件操作对象
+const fs = require('fs');
+//node.js 路径操作对象
+const path = require('path');
+//故名思意 异步二进制 写入流
+const awaitWriteStream = require('await-stream-ready').write;
+//管道读入一个虫洞。
+const sendToWormhole = require('stream-wormhole');
+const md5 = require('md5');
 const Controller = require("egg").Controller;
 
 class UploadController extends Controller {
   async upload() {
     const ctx = this.ctx;
-    //创建上传表单
-    var form = new formidable.IncomingForm();
-    //设置编辑
-    form.encoding = "utf-8";
-    //设置上传目录
-    form.uploadDir = "app/public/images/";
-    //保留后缀
-    form.keepExtensions = true;
-    //文件大小 2M
-    form.maxFieldsSize = 2 * 1024 * 1024;
-    form.parse(ctx.request, function(err, fields, files) {
-      if (err) {
-        console.log("err=>", err);
-        return;
-      }
-      var avatarName = Math.random() + "." + extName;
-      var newPath = form.uploadDir + avatarName;
-      fs.renameSync(files.fulAvatar.path, newPath); //重命名
-    });
+    //egg-multipart 已经帮我们处理文件二进制对象
+    const stream = await ctx.getFileStream();
+    //新建一个文件名
+    const filename = md5(stream.filename) + path
+      .extname(stream.filename)
+      .toLocaleLowerCase();
+    //文件生成绝对路径
+    //当然这里这样市不行的，因为你还要判断一下是否存在文件路径
+    const target = path.join('app/public/images', filename);
+    //生成一个文件写入 文件流
+    const writeStream = fs.createWriteStream(target);
+    try {
+      //异步把文件流 写入
+      await awaitWriteStream(stream.pipe(writeStream));
+    } catch (err) {
+      //如果出现错误，关闭管道
+      await sendToWormhole(stream);
+      throw err;
+    }
+    //文件响应
+    ctx.body = {
+      ...tip[200],
+      data: '/public/images/' + filename
+    };
   }
 }
 

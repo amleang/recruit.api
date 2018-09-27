@@ -4,6 +4,7 @@ const svgCaptcha = require('svg-captcha');
 const md5 = require('md5');
 const tip = require("../lib/tip")
 const {
+    cookiesValid,
     whereObject,
     sqlWhereCount
 } = require("../lib/utils")
@@ -18,28 +19,32 @@ class UserController extends Controller {
                 where: {
                     username: query.username,
                     userpwd: md5(query.pwd)
-                }
+                },
+                columns: ['id', 'username', 'active'],
             });
             if (results.length > 0) {
                 if (results[0].active != 1) {
-                    this.ctx.body = { ...tip[1002]
+                    this.ctx.body = {
+                        ...tip[1002]
                     }
                 } else {
                     this.ctx.cookies.set("recrit-ck", JSON.stringify(results[0]), {
                         maxAge: 4 * 1000 * 60 * 60,
-                        httpOnly: true, // 默认就是 true
-                        encrypt: true, // 加密传输
+                        httpOnly: false // 默认就是 true
                     })
-                    this.ctx.body = { ...tip[200],
+                    this.ctx.body = {
+                        ...tip[200],
                         docs: results[0]
                     }
                 }
             } else {
-                this.ctx.body = { ...tip[1001]
+                this.ctx.body = {
+                    ...tip[1001]
                 }
             }
         } else {
-            this.ctx.body = { ...tip[1006]
+            this.ctx.body = {
+                ...tip[1006]
             }
         }
     }
@@ -58,6 +63,8 @@ class UserController extends Controller {
      */
     async list() {
         const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
         const params = ctx.query;
         params.page = params.page || 1;
         params.size = params.size || 10;
@@ -74,7 +81,8 @@ class UserController extends Controller {
             offset: offset
         });
         const count = await this.app.mysql.query(countWhere);
-        ctx.body = { ...tip[200],
+        ctx.body = {
+            ...tip[200],
             data: results,
             count: count[0].count
         };
@@ -84,12 +92,14 @@ class UserController extends Controller {
      */
     async item() {
         const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
         const id = ctx.params.id;
-        console.log(ctx.params);
         const form = await this.app.mysql.get("user", {
             id: id
         });
-        this.ctx.body = { ...tip[200],
+        this.ctx.body = {
+            ...tip[200],
             data: form
         };
     }
@@ -98,14 +108,32 @@ class UserController extends Controller {
      */
     async inset() {
         const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
         const form = ctx.request.body;
+        //用户名是否存在
+        const countWhere = sqlWhereCount("user", { username: form.username });
+        const namecount = await this.app.mysql.query(countWhere);
+        if (namecount[0].count > 0) {
+            ctx.body = { ...tip[1002] };
+            return
+        }
+        form.createAt = this.app.mysql.literals.now;
+        if (form.role == 1)
+            form.userpwd = md5("123");
+        else {
+            form.invitationCode = await this.invitationCodeFun();
+        }
+        delete form.id
         const result = await this.app.mysql.insert("user", form);
         if (result.affectedRows > 0) {
-            ctx.body = { ...tip[200],
+            ctx.body = {
+                ...tip[200],
                 data: true
             };
         } else {
-            ctx.body = { ...tip[2002],
+            ctx.body = {
+                ...tip[2002],
                 data: false
             };
         }
@@ -115,17 +143,48 @@ class UserController extends Controller {
      */
     async update() {
         const ctx = this.ctx;
-        const form = ctx.query;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        if (form.role == 1 && form.userpwd == "") {
+            form.userpwd = md5("123");
+        }
+        form.updateAt = this.app.mysql.literals.now;
+        delete form.createAt;
         const result = await this.app.mysql.update("user", form);
         if (result.affectedRows > 0) {
-            ctx.body = { ...tip[200],
+            ctx.body = {
+                ...tip[200],
                 data: true
             };
         } else {
-            ctx.body = { ...tip[2003],
+            ctx.body = {
+                ...tip[2003],
                 data: false
             };
         }
+    }
+    /**
+     * 获取邀请码
+     */
+    async invitationCodeFun() {
+        let code = await this.RndNum(5);
+        const countWhere = sqlWhereCount("user", { role: 2, invitationCode: code });
+        const count = await this.app.mysql.query(countWhere);
+        if (count[0].count > 0)
+            await this.invitationCodeFun();
+        return code;
+
+    }
+    /**
+     * 生成随机数
+     * @param {位数} n 
+     */
+    async RndNum(n) {
+        var rnd = "";
+        for (var i = 0; i < n; i++)
+            rnd += Math.floor(Math.random() * 10);
+        return rnd;
     }
 }
 module.exports = UserController;
