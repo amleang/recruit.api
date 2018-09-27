@@ -7,7 +7,7 @@ const whereObject = function (where) {
     const clumns = _.assign({}, where);
     delete clumns.page;
     delete clumns.size;
-    return whereObject;
+    return clumns;
 }
 /**
  * where 条件转SQL
@@ -19,9 +19,13 @@ const sqlWhereCount = function (tableName, clumns) {
     let whereStr = "";
     keys.forEach(key => {
         if (whereStr != "") {
-            whereStr += " AND " + key + "='" + clumns[key] + "'"
-        } else
-            whereStr = key + "='" + clumns[key] + "'"
+            if (clumns[key])
+                whereStr += " AND " + key + "='" + clumns[key] + "'"
+        } else {
+            if (clumns[key])
+                whereStr = key + "='" + clumns[key] + "'"
+        }
+
     })
     let countSql = "select count(*) as count from " + tableName;
     if (whereStr != "")

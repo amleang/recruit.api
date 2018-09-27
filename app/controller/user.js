@@ -63,10 +63,11 @@ class UserController extends Controller {
         params.size = params.size || 10;
         let offset = (params.page - 1) * params.size;
         const where = whereObject(params);
-        const countWhere = sqlWhereCount("v_user_role_ent", where);
-        const results = await this.app.mysql.select("v_user_role_ent", {
+        const countWhere = sqlWhereCount("user", where);
+        const results = await this.app.mysql.select("user", {
             where: where,
             orders: [
+                ['role', 'asc'],
                 ['createAt', 'desc']
             ],
             limit: params.size,
@@ -99,7 +100,7 @@ class UserController extends Controller {
         const ctx = this.ctx;
         const form = ctx.request.body;
         const result = await this.app.mysql.insert("user", form);
-        if (result.affectedRows  > 0) {
+        if (result.affectedRows > 0) {
             ctx.body = { ...tip[200],
                 data: true
             };
@@ -116,7 +117,7 @@ class UserController extends Controller {
         const ctx = this.ctx;
         const form = ctx.query;
         const result = await this.app.mysql.update("user", form);
-        if (result.affectedRows  > 0) {
+        if (result.affectedRows > 0) {
             ctx.body = { ...tip[200],
                 data: true
             };

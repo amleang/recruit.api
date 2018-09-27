@@ -4,10 +4,15 @@
   "description": "recruit project",
   "private": true,
   "dependencies": {
+    "await-stream-ready": "^1.0.1",
+    "crypto": "^1.0.1",
     "egg": "^2.2.1",
+    "egg-multipart": "^2.1.0",
     "egg-mysql": "^3.0.0",
     "egg-scripts": "^2.5.0",
     "lodash": "^4.17.11",
+    "multiparty": "^4.2.1",
+    "stream-wormhole": "^1.1.0",
     "svg-captcha": "^1.3.11"
   },
   "devDependencies": {

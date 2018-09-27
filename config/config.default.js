@@ -5,7 +5,14 @@ module.exports = appInfo => {
 
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1537494664130_6476';
-
+  config.security = {
+    csrf: {
+      enable: false,
+    },
+    xframe: {
+      enable: false,
+    },
+  };
   // add your config here
   config.middleware = [];
   config.mysql = {
@@ -21,6 +28,9 @@ module.exports = appInfo => {
       // 数据库名
       database: 'recruit',
     },
+  }
+  config.multipart = {
+    fileSize: '2mb'
   }
   return config;
 };

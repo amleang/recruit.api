@@ -6,3 +6,8 @@ exports.mysql = {
     enable: true,
     package: 'egg-mysql',
 };
+
+exports.multipart = {
+    enable: true,
+    package: 'egg-multipart'
+}
