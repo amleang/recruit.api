@@ -128,13 +128,11 @@ class UserController extends Controller {
         const result = await this.app.mysql.insert("user", form);
         if (result.affectedRows > 0) {
             ctx.body = {
-                ...tip[200],
-                data: true
+                ...tip[200]
             };
         } else {
             ctx.body = {
-                ...tip[2002],
-                data: false
+                ...tip[2002]
             };
         }
     }
@@ -154,13 +152,11 @@ class UserController extends Controller {
         const result = await this.app.mysql.update("user", form);
         if (result.affectedRows > 0) {
             ctx.body = {
-                ...tip[200],
-                data: true
+                ...tip[200]
             };
         } else {
             ctx.body = {
-                ...tip[2003],
-                data: false
+                ...tip[2003]
             };
         }
     }
