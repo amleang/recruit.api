@@ -30,7 +30,7 @@ class CompanyController extends Controller {
         const form = ctx.request.body;
 
         await this.app.mysql.delete("links");
-        var links = Object.assign({}, form.links);
+        var links = JSON.parse(JSON.stringify(form.links))
         delete form.links;
         const result = await this.app.mysql.insert("company", form);
         if (result.affectedRows > 0) {
@@ -54,13 +54,14 @@ class CompanyController extends Controller {
         const form = ctx.request.body;
 
         await this.app.mysql.delete("links");
-        var links = Object.assign({}, form.links);
+        var links = JSON.parse(JSON.stringify(form.links))
         delete form.links;
 
         const result = await this.app.mysql.update("company", form);
         if (result.affectedRows > 0) {
             for (var i = 0; i < links.length; i++) {
-                await this.app.mysql.insert("links", links[i]);
+                let resultLink = await this.app.mysql.insert("links", links[i]);
+                console.log("resultLink=>", resultLink)
             }
             ctx.body = {
                 ...tip[200]

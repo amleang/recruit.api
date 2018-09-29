@@ -8,6 +8,7 @@ const awaitWriteStream = require('await-stream-ready').write;
 //管道读入一个虫洞。
 const sendToWormhole = require('stream-wormhole');
 const md5 = require('md5');
+const tip = require("../lib/tip")
 const Controller = require("egg").Controller;
 
 class UploadController extends Controller {
@@ -35,7 +36,7 @@ class UploadController extends Controller {
     //文件响应
     ctx.body = {
       ...tip[200],
-      data: '/public/images/' + filename
+      data: '/images/' + filename
     };
   }
 }

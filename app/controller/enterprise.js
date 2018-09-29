@@ -1,7 +1,8 @@
 'use strict';
-const tip = require("../lib/tip")
 const Controller = require('egg').Controller;
+const tip = require("../lib/tip")
 const {
+    cookiesValid,
     whereObject,
     sqlWhereCount
 } = require("../lib/utils")
@@ -15,7 +16,7 @@ class EnterpriseController extends Controller {
             data: results
         };
     }
-    async list(){
+    async list() {
         const ctx = this.ctx;
         const params = ctx.query;
         params.page = params.page || 1;
@@ -36,6 +37,55 @@ class EnterpriseController extends Controller {
             data: results,
             count: count[0].count
         };
+    }
+    async item() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const id = ctx.params.id;
+        const form = await this.app.mysql.get("enterprise", {
+            id: id
+        });
+        this.ctx.body = {
+            ...tip[200],
+            data: form
+        };
+    }
+
+    async insert() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        form.createAt = this.app.mysql.literals.now;
+        delete form.id
+        const result = await this.app.mysql.insert("enterprise", form);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        } else {
+            ctx.body = {
+                ...tip[2002]
+            };
+        }
+    }
+    async update() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        form.updateAt = this.app.mysql.literals.now;
+        const result = await this.app.mysql.update("enterprise", form);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        } else {
+            ctx.body = {
+                ...tip[2003]
+            };
+        }
     }
 }
 
