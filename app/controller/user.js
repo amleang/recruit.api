@@ -6,7 +6,8 @@ const tip = require("../lib/tip")
 const {
     cookiesValid,
     whereObject,
-    sqlWhereCount
+    sqlWhereCount,
+    sqlWhere,
 } = require("../lib/utils")
 class UserController extends Controller {
     /**
@@ -69,9 +70,10 @@ class UserController extends Controller {
         params.page = params.page || 1;
         params.size = params.size || 10;
         let offset = (params.page - 1) * params.size;
+
         const where = whereObject(params);
         const countWhere = sqlWhereCount("user", where);
-        const results = await this.app.mysql.select("user", {
+ /*        const results = await this.app.mysql.select("user", {
             where: where,
             orders: [
                 ['role', 'asc'],
@@ -79,8 +81,10 @@ class UserController extends Controller {
             ],
             limit: params.size,
             offset: offset
-        });
+        }); */
         const count = await this.app.mysql.query(countWhere);
+        const sql = sqlWhere("user", where, [['role', 'asc'], ['createAt', 'desc']], [offset, params.size,]);
+        const results = await this.app.mysql.query(sql);
         ctx.body = {
             ...tip[200],
             data: results,

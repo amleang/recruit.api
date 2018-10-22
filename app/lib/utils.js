@@ -26,6 +26,30 @@ const whereObject = function (where) {
     delete clumns.size;
     return clumns;
 }
+const sqlWhere = function (tableName, where, orderby, limit) {
+    let sql = " select * from " + tableName;
+    let keys = Object.keys(where);
+    if (keys.length > 0) {
+        let whereStr = "";
+        keys.forEach(key => {
+            if (whereStr == "")
+                whereStr += key += " like '%" + where[key] + "%'";
+            else
+                whereStr += " and " + key + " like '%" + where[key] + "%'";
+        });
+        sql += " where " + whereStr;
+    }
+    if (orderby.length > 0) {
+        let orderbyArr = [];
+        orderby.forEach(item => {
+            orderbyArr.push(item.join(' '));
+        })
+        let orderbyStr = orderbyArr.join(',');
+        sql += " order by " + orderbyStr;
+    }
+    sql += " limit " + limit[0] + "," + limit[1];
+    return sql;
+}
 /**
  * where 条件转SQL
  * @param {*} tableName 
@@ -53,5 +77,6 @@ const sqlWhereCount = function (tableName, clumns) {
 module.exports = {
     cookiesValid,
     whereObject,
-    sqlWhereCount
+    sqlWhereCount,
+    sqlWhere
 }
