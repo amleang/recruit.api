@@ -9,8 +9,13 @@ const {
 const Controller = require('egg').Controller;
 
 class RecruitController extends Controller {
+    /**
+     * 后台列表
+     */
     async list() {
         const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
         const params = ctx.query;
         params.page = params.page || 1;
         params.size = params.size || 10;
@@ -26,6 +31,9 @@ class RecruitController extends Controller {
             count: count[0].count
         };
     }
+    /**
+     * 获取单条
+     */
     async item() {
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
@@ -122,6 +130,67 @@ class RecruitController extends Controller {
                 ...tip[2003]
             };
         }
+    }
+    /**
+     * 修改状态
+     */
+    async active() {
+        debugger;
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const id = ctx.query.id;
+        const active = ctx.query.active;
+        const result = await this.app.mysql.query("update recruit set active=? where id=?", [active, id]);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        }
+        else {
+            ctx.body = {
+                ...tip[2003]
+            };
+        }
+    }
+
+    /**招工纠错列表 */
+    async correction() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const params = ctx.query;
+        params.page = params.page || 1;
+        params.size = params.size || 10;
+        let offset = (params.page - 1) * params.size;
+        const where = whereObject(params);
+        const countWhere = sqlWhereCount("v_correction", where);
+        const count = await this.app.mysql.query(countWhere);
+        const sql = sqlWhere("v_correction", where, [['createAt', 'desc']], [offset, params.size,]);
+        const results = await this.app.mysql.query(sql);
+        ctx.body = {
+            ...tip[200],
+            data: results,
+            count: count[0].count
+        };
+    }
+
+    async correctionitem() {
+        debugger
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const id = ctx.params.id;
+        const form = await this.app.mysql.get("correction", {
+            id: id
+        });
+        if (form.imgs != "")
+            form.imgs = form.imgs.split(',');
+        form.subsidys = [];
+        this.ctx.body = {
+            ...tip[200],
+            data: form
+        };
     }
 }
 

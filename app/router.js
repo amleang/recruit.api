@@ -8,7 +8,11 @@ module.exports = app => {
   require('./routers/enterprise')(app);
   require('./routers/company')(app);
   require('./routers/recruit')(app);
+  require('./routers/app')(app);
   const { router, controller } = app;
   router.post("/api/upload", controller.upload.upload);
+  /**纠错 */
+  router.get("/api/correction", controller.recruit.correction);
+  router.get("/api/correction/:id", controller.recruit.correctionitem)
 
 };
