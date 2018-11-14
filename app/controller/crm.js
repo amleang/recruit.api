@@ -139,7 +139,7 @@ class CrmController extends Controller {
     /**
      * 获取待返现详情
      */
-    async wcashbackitem(){
+    async wcashbackitem() {
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;
@@ -147,12 +147,52 @@ class CrmController extends Controller {
         const form = await this.app.mysql.get("v_enroll", {
             id: id
         });
-        const results = await this.app.mysql.query("select * from v_enroll where unionid=? and id!=? and `status`=0  ORDER BY createAt desc ", [form.unionid, id]);
+        const results = await this.app.mysql.query("select * from v_cashback where enrollid=? ORDER BY createAt desc ", [id]);
         form.otherdata = results;
         ctx.body = {
             ...tip[200],
             data: form
         };
+    }
+    /**推荐记录列表 */
+    async recommend() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const params = ctx.query;
+        params.page = params.page || 1;
+        params.size = params.size || 10;
+        let offset = (params.page - 1) * params.size;
+
+        const where = whereObject(params);
+        const countWhere = sqlWhereCount("v_recommend", where);
+        const count = await this.app.mysql.query(countWhere);
+        const sql = sqlWhere("v_recommend", where, [['status','asc'],['createAt', 'desc']], [offset, params.size,]);
+        const results = await this.app.mysql.query(sql);
+        ctx.body = {
+            ...tip[200],
+            data: results,
+            count: count[0].count
+        };
+    }
+    /**确认推荐记录 */
+    async setrecommend() {
+        debugger
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        form.updateAt = this.app.mysql.literals.now;
+        const result = await this.app.mysql.update("recommend", form);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        } else {
+            ctx.body = {
+                ...tip[2003]
+            };
+        }
     }
 
 }

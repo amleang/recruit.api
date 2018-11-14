@@ -6,4 +6,9 @@ module.exports = app => {
 
     app.router.get("/api/crm/enrolllist", app.controller.crm.enrolllist);
     app.router.post("/api/crm/setenroll", app.controller.crm.setenroll);
+
+    app.router.get("/api/crm/wcashbackitem/:id", app.controller.crm.wcashbackitem);
+    app.router.get("/api/crm/recommend", app.controller.crm.recommend);
+    app.router.post("/api/crm/setrecommend", app.controller.crm.setrecommend);
+
 }

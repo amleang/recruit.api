@@ -31,7 +31,7 @@ class AppController extends Controller {
   /**
    * 推荐recruit列表 6条
    */
-  async recommend() {
+  async recommendlist() {
     const ctx = this.ctx;
     const params = ctx.query;
     params.page = 1;
@@ -52,7 +52,6 @@ class AppController extends Controller {
    * 获取 recruit 单条信息
    */
   async recruititem() {
-    debugger;
     const ctx = this.ctx;
     const id = ctx.query.id;
     const form = await this.app.mysql.get("recruit", {
@@ -239,6 +238,96 @@ class AppController extends Controller {
     const where = whereObject(params);
     const sql = sqlWhere("v_attention", where, [['createAt', 'desc']], [offset, params.size]);
     const results = await this.app.mysql.query(sql);
+    ctx.body = {
+      ...tip[200],
+      data: results
+    };
+  }
+  /**
+   * 立即推荐
+   */
+  async recommend() {
+    const ctx = this.ctx;
+    let form = ctx.request.body;
+    const unionid = form.unionid;
+    const phone = form.phone;
+    const item = await this.app.mysql.get("recommend", {
+      unionid: unionid,
+      phone: phone
+    });
+    if (item) {
+      ctx.body = {
+        code: 1001,
+        msg
+      };
+      return;
+    }
+    else {
+      form.createAt = this.app.mysql.literals.now;
+      const result = await this.app.mysql.insert("recommend", form);
+
+      if (result.affectedRows > 0) {
+        ctx.body = {
+          ...tip[200],
+          id: result.insertId
+        };
+      } else {
+        ctx.body = {
+          ...tip[2002]
+        };
+      }
+    }
+
+  }
+  /**
+   * 余额
+   */
+  async balance() {
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const result = await this.app.mysql.query("select SUM(price) as totalprice from v_cashbacklist where `status`=1 and unionid=?", [unionid]);
+    const form = {
+      totalprice: result[0].totalprice,
+    }
+    ctx.body = {
+      ...tip[200],
+      data: form
+    };
+  }
+  /**
+   * 查看余额明细
+   */
+  async balancelist() {
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const results = await this.app.mysql.query("select * from v_cashbacklist where `status`=1 and unionid=? order by updateAt asc", [unionid])
+
+    ctx.body = {
+      ...tip[200],
+      data: results
+    };
+  }
+  /**
+   * 补贴记录
+   */
+  async cashbacklist() {
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const results = await this.app.mysql.query("select * from v_cashback where unionid=? order by createAt ASC", [unionid])
+
+    ctx.body = {
+      ...tip[200],
+      data: results
+    };
+  }
+  /**
+   * 我的工作
+   */
+  async worklist(){
+    debugger
+    const ctx=this.ctx;
+    let unionid=ctx.query.unionid;
+    const results=await this.app.mysql.query("select * from v_work where unionid=? and `status` in(3,4) order by entryAt DESC",[unionid])
     ctx.body = {
       ...tip[200],
       data: results

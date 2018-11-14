@@ -19,9 +19,9 @@ class CashbackController extends Controller {
         let offset = (params.page - 1) * params.size;
 
         const where = whereObject(params);
-        const countWhere = sqlWhereCount("v_cashback", where);
+        const countWhere = sqlWhereCount("v_cashbacklist", where);
         const count = await this.app.mysql.query(countWhere);
-        const sql = sqlWhere("v_cashback", where, [['createAt', 'desc']], [offset, params.size,]);
+        const sql = sqlWhere("v_cashbacklist", where, [['createAt', 'desc']], [offset, params.size,]);
         const results = await this.app.mysql.query(sql);
         ctx.body = {
             ...tip[200],
@@ -31,6 +31,7 @@ class CashbackController extends Controller {
     }
 
     async inset() {
+        debugger
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;
@@ -39,6 +40,7 @@ class CashbackController extends Controller {
         delete form.id
         const result = await this.app.mysql.insert("cashback", form);
         if (result.affectedRows > 0) {
+            const res = await this.app.mysql.query("update enroll set lastcashback=now() where id=?", [form.enrollid])
             ctx.body = {
                 ...tip[200]
             };
@@ -50,21 +52,37 @@ class CashbackController extends Controller {
     }
 
     async del() {
+        debugger
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;
         const id = ctx.params.id;
-        const form = await this.app.mysql.delete('cashback', {
-            id: id
-        });
-        if (result.affectedRows > 0) {
-            ctx.body = {
-                ...tip[200]
-            };
-        } else {
-            ctx.body = {
-                ...tip[2004]
-            };
+        const type = ctx.query.type;
+        if (type == 0) {
+            const result = await this.app.mysql.delete('cashback', {
+                id: id
+            });
+            if (result.affectedRows > 0) {
+                ctx.body = {
+                    ...tip[200]
+                };
+            } else {
+                ctx.body = {
+                    ...tip[2002]
+                };
+            }
+        }
+        else {
+            const result = await this.app.mysql.update("recommend", { status: 0, id: id });
+            if (result.affectedRows > 0) {
+                ctx.body = {
+                    ...tip[200]
+                };
+            } else {
+                ctx.body = {
+                    ...tip[2003]
+                };
+            }
         }
     }
 }
