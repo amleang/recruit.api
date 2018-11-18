@@ -23,4 +23,11 @@ module.exports = app => {
     app.router.get("/api/app/cashbacklist", app.controller.app.cashbacklist);
     /**我的工作 */
     app.router.get("/api/app/worklist",app.controller.app.worklist);
+    /**查看排名 */
+    app.router.get("/api/app/ranking",app.controller.app.ranking);
+    /**我的推荐 */
+    app.router.get("/api/app/myrecommend",app.controller.app.myrecommend);
+    /**测试 */
+    app.router.post("/api/app/test",app.controller.app.test);
+    
 }

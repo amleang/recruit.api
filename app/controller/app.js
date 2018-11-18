@@ -323,15 +323,53 @@ class AppController extends Controller {
   /**
    * 我的工作
    */
-  async worklist(){
+  async worklist() {
     debugger
-    const ctx=this.ctx;
-    let unionid=ctx.query.unionid;
-    const results=await this.app.mysql.query("select * from v_work where unionid=? and `status` in(3,4) order by entryAt DESC",[unionid])
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const results = await this.app.mysql.query("select * from v_work where unionid=? and `status` in(3,4) order by entryAt DESC", [unionid])
     ctx.body = {
       ...tip[200],
       data: results
     };
+  }
+  /**
+   * 查看排名
+   */
+  async ranking() {
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const results = await this.app.mysql.query("select unionid,username1,count(1) as total from v_recommend where `status`=1 AND unionid=? GROUP BY unionid,username1", [unionid]);
+
+    const results2 = await this.app.mysql.query("select * from(select unionid,username1,count(1) as total from v_recommend where `status`=1 AND unionid=? GROUP BY unionid,username1) as t ORDER BY t.total desc LIMIT 0,10", [unionid]);
+    const form = {
+      mylist: results,
+      list: results2
+    }
+    ctx.body = {
+      ...tip[200],
+      data: form
+    };
+  }
+
+  /**
+   * 我的推荐
+   */
+  async myrecommend() {
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const results = await this.app.mysql.query("select * from recommend where unionid=? order by createAt DESC", [unionid]);
+    ctx.body = {
+      ...tip[200],
+      data: results
+    }
+  }
+  /**
+   * 测试
+   */
+  async test() {
+    debugger
+    const ctx = this;
   }
 }
 

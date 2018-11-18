@@ -11,3 +11,7 @@ exports.multipart = {
     enable: true,
     package: 'egg-multipart'
 }
+exports.cors = {
+    enable: true,
+    package: 'egg-cors',
+  };

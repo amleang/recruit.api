@@ -45,7 +45,6 @@ class BankController extends Controller {
         }
     }
     async item() {
-        debugger
         const ctx = this.ctx;
         const id = ctx.params.id;
         const form = await this.app.mysql.get("wxbank", {
