@@ -5,6 +5,13 @@ module.exports = appInfo => {
 
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1537494664130_6476';
+  config.cluster ={
+    listen: {
+      port: 7001,
+      hostname: '127.0.0.1',
+      // path: '/var/run/egg.sock',
+    }
+  }
   config.security = {
     csrf: {
       enable: false,
