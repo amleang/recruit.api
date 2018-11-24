@@ -95,6 +95,8 @@ class AppController extends Controller {
     debugger
     const ctx = this.ctx;
     const form = ctx.request.body;
+    if(!form.imgs)
+      form.imgs = [];
     if (form.imgs.length > 0)
       form.imgs = form.imgs.join(',');
     else

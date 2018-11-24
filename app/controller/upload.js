@@ -13,6 +13,7 @@ const Controller = require("egg").Controller;
 
 class UploadController extends Controller {
   async upload() {
+    debugger;
     const ctx = this.ctx;
     //egg-multipart 已经帮我们处理文件二进制对象
     const stream = await ctx.getFileStream();
