@@ -27,7 +27,12 @@ module.exports = app => {
     app.router.get("/api/app/ranking",app.controller.app.ranking);
     /**我的推荐 */
     app.router.get("/api/app/myrecommend",app.controller.app.myrecommend);
-    /**测试 */
-    app.router.post("/api/app/test",app.controller.app.test);
-    
+    /**发送短信验证码 */
+    app.router.post("/api/app/sendsms",app.controller.app.sendSMS);
+    /**修改手机号 */
+    app.router.post("/api/app/updatephone",app.controller.app.updatePhone);
+    /*** 用户个人信息*/
+    app.router.get("/api/app/myinfo",app.controller.app.myinfo);
+    /**修改个人信息 */
+    app.router.post("/api/app/setuserinfo",app.controller.app.setuserinfo);
 }

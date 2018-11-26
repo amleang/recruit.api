@@ -8,8 +8,8 @@ module.exports = appInfo => {
   config.cluster ={
     listen: {
       port: 7001,
-      hostname: '192.168.0.102',
-     /*  hostname:"127.0.0.1" */
+      hostname: '192.168.0.110',
+      /* hostname:"127.0.0.1" */
       // path: '/var/run/egg.sock',
     }
   }
@@ -30,7 +30,7 @@ module.exports = appInfo => {
   config.mysql = {
     client: {
       // host
-      host: '118.25.98.91',
+      host: '47.94.108.191',
       //host:"127.0.0.1",
       // 端口号
       port: '3306',

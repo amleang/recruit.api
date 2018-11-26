@@ -5,6 +5,7 @@ const {
   sqlWhereCount,
   sqlWhere
 } = require("../lib/utils")
+const SMSClient = require('@alicloud/sms-sdk')
 const Controller = require('egg').Controller;
 
 class AppController extends Controller {
@@ -95,7 +96,7 @@ class AppController extends Controller {
     debugger
     const ctx = this.ctx;
     const form = ctx.request.body;
-    if(!form.imgs)
+    if (!form.imgs)
       form.imgs = [];
     if (form.imgs.length > 0)
       form.imgs = form.imgs.join(',');
@@ -366,13 +367,201 @@ class AppController extends Controller {
       data: results
     }
   }
+
   /**
-   * 测试
+   * 短信发送
    */
-  async test() {
+  async sendSMS() {
     debugger
-    const ctx = this;
+    // ACCESS_KEY_ID/ACCESS_KEY_SECRET 根据实际申请的账号信息进行替换
+    const accessKeyId = 'LTAIO4d9UtXP3nd4';
+    const secretAccessKey = 'ZNjmhjQMJOCgNrP4i9PgNJhjetukM0';
+
+    const ctx = this.ctx;
+    let form = ctx.request.body;
+    const unionid = form.unionid;
+    const phone = form.phone;
+    //设置动态验证码
+    var code = await this.RndNum(4);
+    var resid = await this.vcode(code, unionid, phone);
+    debugger;
+    while (resid == 0) {
+      code = await this.RndNum(4);
+      resid = this.vcode(code, unionid, phone);
+    }
+    const uresult = await this.app.mysql.query("update sendSms set status=1 where id=?", [resid]);
+    if (uresult.affectedRows > 0) {
+      ctx.body = {
+        ...tip[200],
+        data: code
+      }
+    }
+    else {
+      ctx.body = {
+        code: 0,
+        msg: "验证码发送失败"
+      }
+    }
+
+    /*  //初始化sms_client
+     let smsClient = new SMSClient({ accessKeyId, secretAccessKey });
+     const that = this;
+     //短信发送
+     smsClient.sendSMS({
+       PhoneNumbers: phone,
+       SignName: "",
+       TemplateCode: "SMS_151771937",
+       TemplateParam: '{"code":"' + code + '"}'
+     }).then(function (res) {
+       if (res == "OK") {
+         //发送成功
+         //修改验证码状态
+         const uresult = that.app.mysql.query("update sendSms set status=1 where id=?", [resid]);
+         if (uresult.affectedRows > 0) {
+           ctx.body = {
+             ...tip[200],
+             data: code
+           }
+         }
+         else {
+           ctx.body = {
+             code: 0,
+             msg: "验证码发送失败"
+           }
+         }
+       }
+       else {
+         //发送失败
+         ctx.body = {
+           code: 0,
+           msg: "验证码发送失败"
+         }
+       }
+     }, function (err) {
+       //接口调用失败
+       ctx.body = {
+         code: 0,
+         msg: "验证码接口调用失败"
+       }
+     }) */
   }
+
+  /**
+   * 修改用户手机号
+   */
+  async updatePhone() {
+    debugger
+    const ctx = this.ctx;
+    let form = ctx.request.body;
+    const unionid = form.unionid;
+    const phone = form.phone;
+    const code = form.code;
+    //先判断code是否正确
+    const count = await this.app.mysql.query("select count(*) count from sendSms where unionid=? and sendCode=? and phone=？ and TIMESTAMPDIFF(MINUTE,createAt,NOW())<=5", [unionid, code, phone]);
+    if (count[0].count > 0) {
+      const results = await this.app.mysql.query("update sendSms set status=2 where unionid=? and sendCode=?", [unionid, code]);
+
+      if (results.affectedRows > 0) {
+        const userresult = await this.app.mysql.query("update wxuser set phone=? where unionid=?", [phone, unionid]);
+        if (userresult.affectedRows > 0) {
+          ctx.body = {
+            ...tip[200],
+            data: "ok"
+          }
+        }
+        else {
+          ctx.body = {
+            code: 0,
+            msg: "手机号修改失败！"
+          }
+        }
+      }
+      else {
+        ctx.body = {
+          code: 0,
+          msg: "手机号修改失败！"
+        }
+      }
+    }
+    else {
+      ctx.body = {
+        code: 0,
+        msg: "验证码不正确或已失效！"
+      }
+    }
+
+  }
+  /**
+   * 获取用户个人信息
+   */
+  async myinfo() {
+    const ctx = this.ctx;
+    let unionid = ctx.query.unionid;
+    const form = await this.app.mysql.get("wxuser", {
+      unionid: unionid
+    });
+    this.ctx.body = {
+      ...tip[200],
+      data: form
+    };
+  }
+  /**
+   * 修改用户信息
+   */
+  async setuserinfo() {
+    debugger
+    const ctx = this.ctx;
+    const form = ctx.request.body;
+    const result = await this.app.mysql.update("wxuser", form, { where: { unionid: form.unionid } });
+    if (result.affectedRows > 0) {
+      ctx.body = {
+        ...tip[200]
+      };
+    } else {
+      ctx.body = {
+        ...tip[2003]
+      };
+    }
+  }
+
+  /**
+   * 验证号码是否存在
+   * @param {*} code 
+   * @param {*} unionid 
+   */
+  async vcode(code, unionid, phone) {
+    debugger
+    const result = await this.app.mysql.query("select count(*) as count from sendSms where unionid='" + unionid + "' and sendCode='" + code + "' and status!=" + 2);
+    if (result.count > 0) {
+      return 0;
+    }
+    else {
+      const form = {
+        phone: phone,
+        sendCode: code,
+        unionid: unionid,
+        status: 0
+      }
+      form.createAt = this.app.mysql.literals.now;
+      const result2 = await this.app.mysql.insert("sendSms", form);
+      if (result2.affectedRows > 0) {
+        return result2.insertId;
+      }
+      return 0;
+    }
+  }
+
+  /**
+     * 生成随机数
+     * @param {位数} n 
+     */
+  async RndNum(n) {
+    var rnd = "";
+    for (var i = 0; i < n; i++)
+      rnd += Math.floor(Math.random() * 10);
+    return rnd;
+  }
+
 }
 
 module.exports = AppController;
