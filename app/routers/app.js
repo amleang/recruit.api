@@ -35,4 +35,8 @@ module.exports = app => {
     app.router.get("/api/app/myinfo",app.controller.app.myinfo);
     /**修改个人信息 */
     app.router.post("/api/app/setuserinfo",app.controller.app.setuserinfo);
+    /**保存用户资料信息 */
+    app.router.post("/api/app/savewxuser",app.controller.app.savewxuser);
+    /**注册用户资料信息 */
+    app.router.post("/api/app/savereguser",app.controller.app.savereguser);
 }

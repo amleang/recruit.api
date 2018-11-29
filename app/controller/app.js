@@ -340,11 +340,12 @@ class AppController extends Controller {
    * 查看排名
    */
   async ranking() {
+    debugger;
     const ctx = this.ctx;
     let unionid = ctx.query.unionid;
     const results = await this.app.mysql.query("select unionid,username1,count(1) as total from v_recommend where `status`=1 AND unionid=? GROUP BY unionid,username1", [unionid]);
 
-    const results2 = await this.app.mysql.query("select * from(select unionid,username1,count(1) as total from v_recommend where `status`=1 AND unionid=? GROUP BY unionid,username1) as t ORDER BY t.total desc LIMIT 0,10", [unionid]);
+    const results2 = await this.app.mysql.query("select * from(select unionid,username1,count(1) as total from v_recommend where `status`=1  GROUP BY unionid,username1) as t ORDER BY t.total desc LIMIT 0,10");
     const form = {
       mylist: results,
       list: results2
@@ -389,61 +390,49 @@ class AppController extends Controller {
       code = await this.RndNum(4);
       resid = this.vcode(code, unionid, phone);
     }
-    const uresult = await this.app.mysql.query("update sendSms set status=1 where id=?", [resid]);
-    if (uresult.affectedRows > 0) {
-      ctx.body = {
-        ...tip[200],
-        data: code
+
+
+    //初始化sms_client
+    let smsClient = new SMSClient({ accessKeyId, secretAccessKey });
+    const that = this;
+    //短信发送
+    smsClient.sendSMS({
+      PhoneNumbers: phone,
+      SignName: "苏州德聚仁合信息服务",
+      TemplateCode: "SMS_151771937",
+      TemplateParam: '{"code":"' + code + '"}'
+    }).then(function (res) {
+      if (res == "OK") {
+        //发送成功
+        //修改验证码状态
+        const uresult = that.app.mysql.query("update sendSms set status=1 where id=?", [resid]);
+        if (uresult.affectedRows > 0) {
+          ctx.body = {
+            ...tip[200],
+            data: code
+          }
+        }
+        else {
+          ctx.body = {
+            code: 0,
+            msg: "验证码发送失败"
+          }
+        }
       }
-    }
-    else {
+      else {
+        //发送失败
+        ctx.body = {
+          code: 0,
+          msg: "验证码发送失败"
+        }
+      }
+    }, function (err) {
+      //接口调用失败
       ctx.body = {
         code: 0,
-        msg: "验证码发送失败"
+        msg: "验证码接口调用失败"
       }
-    }
-
-    /*  //初始化sms_client
-     let smsClient = new SMSClient({ accessKeyId, secretAccessKey });
-     const that = this;
-     //短信发送
-     smsClient.sendSMS({
-       PhoneNumbers: phone,
-       SignName: "",
-       TemplateCode: "SMS_151771937",
-       TemplateParam: '{"code":"' + code + '"}'
-     }).then(function (res) {
-       if (res == "OK") {
-         //发送成功
-         //修改验证码状态
-         const uresult = that.app.mysql.query("update sendSms set status=1 where id=?", [resid]);
-         if (uresult.affectedRows > 0) {
-           ctx.body = {
-             ...tip[200],
-             data: code
-           }
-         }
-         else {
-           ctx.body = {
-             code: 0,
-             msg: "验证码发送失败"
-           }
-         }
-       }
-       else {
-         //发送失败
-         ctx.body = {
-           code: 0,
-           msg: "验证码发送失败"
-         }
-       }
-     }, function (err) {
-       //接口调用失败
-       ctx.body = {
-         code: 0,
-         msg: "验证码接口调用失败"
-       }
-     }) */
+    })
   }
 
   /**
@@ -457,7 +446,7 @@ class AppController extends Controller {
     const phone = form.phone;
     const code = form.code;
     //先判断code是否正确
-    const count = await this.app.mysql.query("select count(*) count from sendSms where unionid=? and sendCode=? and phone=？ and TIMESTAMPDIFF(MINUTE,createAt,NOW())<=5", [unionid, code, phone]);
+    const count = await this.app.mysql.query("select count(*) count from sendSms where unionid=? and sendCode=? and phone=? and TIMESTAMPDIFF(MINUTE,createAt,NOW())<=5", [unionid, code, phone]);
     if (count[0].count > 0) {
       const results = await this.app.mysql.query("update sendSms set status=2 where unionid=? and sendCode=?", [unionid, code]);
 
@@ -523,7 +512,107 @@ class AppController extends Controller {
       };
     }
   }
+  /**
+   * 保存微信用户信息
+   */
+  async savewxuser() {
+    debugger
+    const ctx = this.ctx;
+    const form = ctx.request.body;
+    //根据unionid判断用户是否存在
+    const resform = await this.app.mysql.get("wxuser", {
+      unionid: form.unionid
+    });
+    var request = require('request');
+    var fs = require('fs');
+    const name = form.unionid + ".jpg";
+    await request(form.headimgurl).pipe(fs.createWriteStream('app/public/head/' + name));
+    //存在用户资料
+    if (resform) {
+      resform.nickname = form.nickname;
+      resform.headimgurl = name;
+      resform.updateAt = this.app.mysql.literals.now;
+      const result = await this.app.mysql.update("wxuser", resform, { where: { unionid: resform.unionid } });
+      if (result.affectedRows > 0) {
+        delete resform.updateAt
+        ctx.body = {
+          ...tip[200],
+          data: resform
+        };
+      }
+      else {
+        ctx.body = {
+          code: 0,
+          msg: "保存用户资料失败！"
+        };
+      }
+    }
+    else {
+      form.headimgurl = name;
+      form.status = 0;
+      form.createAt = this.app.mysql.literals.now;
+      const result = await this.app.mysql.insert("wxuser", form);
+      if (result.affectedRows > 0) {
+        ctx.body = {
+          ...tip[200],
+          data: form
+        };
+      }
+      else {
+        ctx.body = {
+          code: 0,
+          msg: "保存用户资料失败！"
+        };
+      }
+    }
 
+  }
+
+  /**
+   * 保存注册信息
+   */
+  async savereguser() {
+    debugger
+    const ctx = this.ctx;
+    const form = ctx.request.body;
+    form.status = 1;
+    const unionid = form.unionid, code = form.code, phone = form.phone;
+    //先判断code是否正确
+    const count = await this.app.mysql.query("select count(*) count from sendSms where unionid=? and sendCode=? and phone=? and TIMESTAMPDIFF(MINUTE,createAt,NOW())<=5", [unionid, code, phone]);
+    if (count[0].count > 0) {
+      const results = await this.app.mysql.query("update sendSms set status=2 where unionid=? and sendCode=?", [unionid, code]);
+      if (results.affectedRows > 0) {
+        delete form.code;
+        const result = await this.app.mysql.update("wxuser", form, { where: { unionid: form.unionid } });
+        if (result.affectedRows > 0) {
+          ctx.body = {
+            ...tip[200],
+            data: "ok"
+          };
+        }
+        else {
+          ctx.body = {
+            code: 0,
+            msg: "注册用户资料失败！"
+          };
+        }
+      }
+      else {
+        ctx.body = {
+          code: 0,
+          msg: "注册用户资料失败！"
+        };
+      }
+    }
+    else {
+      ctx.body = {
+        code: 0,
+        msg: "验证码不正确或已失效！"
+      }
+    }
+
+
+  }
   /**
    * 验证号码是否存在
    * @param {*} code 
