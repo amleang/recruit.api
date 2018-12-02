@@ -164,6 +164,30 @@ class UserController extends Controller {
             };
         }
     }
+
+    /**
+     * 微信用户列表
+     */
+    async wxuser(){
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+            const params = ctx.query;
+        params.page = params.page || 1;
+        params.size = params.size || 10;
+        let offset = (params.page - 1) * params.size;
+
+        const where = whereObject(params);
+        const countWhere = sqlWhereCount("wxuser", where);
+        const count = await this.app.mysql.query(countWhere);
+        const sql = sqlWhere("wxuser", where, [['status', 'desc'], ['createAt', 'desc']], [offset, params.size,]);
+        const results = await this.app.mysql.query(sql);
+        ctx.body = {
+            ...tip[200],
+            data: results,
+            count: count[0].count
+        };
+    }
     /**
      * 获取邀请码
      */
