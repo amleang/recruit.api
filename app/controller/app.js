@@ -6,6 +6,7 @@ const {
   sqlWhere
 } = require("../lib/utils")
 const SMSClient = require('@alicloud/sms-sdk')
+const axios = require("axios")
 const Controller = require('egg').Controller;
 
 class AppController extends Controller {
@@ -612,6 +613,37 @@ class AppController extends Controller {
     }
 
 
+  }
+  /**
+   * 授权获取用户信息
+   */
+  async oathuser() {
+    const ctx = this.ctx;
+    let code = ctx.query.code;
+    await axios.get("https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972&code=" + code + "&grant_type=authorization_code").then(res => {
+      if (res.data.errcode) {
+        ctx.body = {
+          code: 0,
+          msg: "授权失败"
+        }
+      }
+      else {
+        axios.get("https://api.weixin.qq.com/sns/userinfo?access_token=" + res.data.access_token + "&openid=" + res.data.openid + "&lang=zh_CN").then(tres => {
+          if (tres.data.errcode) {
+            ctx.body = {
+              code: 0,
+              msg: "获取用户信息失败"
+            }
+          }
+          else {
+            ctx.body = {
+              code: 200,
+              data: tres.data
+            }
+          }
+        });
+      }
+    })
   }
   /**
    * 验证号码是否存在

@@ -22,21 +22,22 @@ module.exports = app => {
     /**我的补贴 */
     app.router.get("/api/app/cashbacklist", app.controller.app.cashbacklist);
     /**我的工作 */
-    app.router.get("/api/app/worklist",app.controller.app.worklist);
+    app.router.get("/api/app/worklist", app.controller.app.worklist);
     /**查看排名 */
-    app.router.get("/api/app/ranking",app.controller.app.ranking);
+    app.router.get("/api/app/ranking", app.controller.app.ranking);
     /**我的推荐 */
-    app.router.get("/api/app/myrecommend",app.controller.app.myrecommend);
+    app.router.get("/api/app/myrecommend", app.controller.app.myrecommend);
     /**发送短信验证码 */
-    app.router.post("/api/app/sendsms",app.controller.app.sendSMS);
+    app.router.post("/api/app/sendsms", app.controller.app.sendSMS);
     /**修改手机号 */
-    app.router.post("/api/app/updatephone",app.controller.app.updatePhone);
+    app.router.post("/api/app/updatephone", app.controller.app.updatePhone);
     /*** 用户个人信息*/
-    app.router.get("/api/app/myinfo",app.controller.app.myinfo);
+    app.router.get("/api/app/myinfo", app.controller.app.myinfo);
     /**修改个人信息 */
-    app.router.post("/api/app/setuserinfo",app.controller.app.setuserinfo);
+    app.router.post("/api/app/setuserinfo", app.controller.app.setuserinfo);
     /**保存用户资料信息 */
-    app.router.post("/api/app/savewxuser",app.controller.app.savewxuser);
+    app.router.post("/api/app/savewxuser", app.controller.app.savewxuser);
     /**注册用户资料信息 */
-    app.router.post("/api/app/savereguser",app.controller.app.savereguser);
+    app.router.post("/api/app/savereguser", app.controller.app.savereguser);
+    app.router.get("/api/app/oathuser", app.controller.app.oathuser);
 }

@@ -6,6 +6,7 @@
   "dependencies": {
     "@alicloud/sms-sdk": "^1.1.6",
     "await-stream-ready": "^1.0.1",
+    "axios": "^0.18.0",
     "crypto": "^1.0.1",
     "egg": "^2.2.1",
     "egg-cors": "^2.1.1",
