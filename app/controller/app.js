@@ -618,6 +618,7 @@ class AppController extends Controller {
    * 授权获取用户信息
    */
   async oathuser() {
+    debugger
     const ctx = this.ctx;
     let code = ctx.query.code;
     const url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972&code=" + code + "&grant_type=authorization_code";
@@ -626,7 +627,7 @@ class AppController extends Controller {
     if (res.data.errcode) {
       ctx.body = {
         code: 0,
-        msg: "授权失败"
+        msg: "授权失败=>"+JSON.stringify(res.data)
       }
     }
     else {
@@ -635,7 +636,7 @@ class AppController extends Controller {
       if (userres.data.errcode) {
         ctx.body = {
           code: 0,
-          msg: "获取用户信息失败"
+          msg: "获取用户信息失败=>"+JSON.stringify(userres.data)
         }
       }
       else {
