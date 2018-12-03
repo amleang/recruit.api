@@ -620,7 +620,32 @@ class AppController extends Controller {
   async oathuser() {
     const ctx = this.ctx;
     let code = ctx.query.code;
-    await axios.get("https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972&code=" + code + "&grant_type=authorization_code").then(res => {
+    const url = "https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972&code=" + code + "&grant_type=authorization_code";
+
+    const res = await ctx.curl(url, { dataType: 'json' });
+    if (res.data.errcode) {
+      ctx.body = {
+        code: 0,
+        msg: "授权失败"
+      }
+    }
+    else {
+      const userurl = "https://api.weixin.qq.com/sns/userinfo?access_token=" + res.data.access_token + "&openid=" + res.data.openid + "&lang=zh_CN";
+      const userres = await ctx.curl(userurl, { dataType: "json" });
+      if (userres.data.errcode) {
+        ctx.body = {
+          code: 0,
+          msg: "获取用户信息失败"
+        }
+      }
+      else {
+        ctx.body = {
+          code: 200,
+          data: userres.data
+        }
+      }
+    }
+    /* await axios.get("https://api.weixin.qq.com/sns/oauth2/access_token?appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972&code=" + code + "&grant_type=authorization_code").then(res => {
       if (res.data.errcode) {
         ctx.body = {
           code: 0,
@@ -643,7 +668,7 @@ class AppController extends Controller {
           }
         });
       }
-    })
+    }) */
   }
   /**
    * 验证号码是否存在
