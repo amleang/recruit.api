@@ -1,5 +1,6 @@
 'use strict';
 const tip = require("../lib/tip")
+const sign = require('../lib/sign.js');
 const {
   whereObject,
   sqlWhereCount,
@@ -627,7 +628,7 @@ class AppController extends Controller {
     if (res.data.errcode) {
       ctx.body = {
         code: 0,
-        msg: "授权失败=>"+JSON.stringify(res.data)
+        msg: "授权失败"
       }
     }
     else {
@@ -636,7 +637,7 @@ class AppController extends Controller {
       if (userres.data.errcode) {
         ctx.body = {
           code: 0,
-          msg: "获取用户信息失败=>"+JSON.stringify(userres.data)
+          msg: "获取用户信息失败"
         }
       }
       else {
@@ -670,6 +671,76 @@ class AppController extends Controller {
         });
       }
     }) */
+  }
+
+  /**
+   * 获取微信分享的信息
+   */
+  async getwxshare() {
+    debugger
+    const ctx = this.ctx;
+    const form = ctx.request.body;
+    const pageurl = form.url;
+    //获取企业中的ticket是否过期
+    const result = await ctx.app.mysql.query("select access_token,jsapi_ticket from company where TIMESTAMPDIFF(SECOND,access_tokenAt,NOW())<=7000");
+    if (result.length == 0) {
+      //获取access_token
+      const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972";
+      const tokenres = await ctx.curl(tokenUrl, { dataType: "json" });
+      if (tokenres.data.errcode) {
+        ctx.body = {
+          code: 0,
+          msg: "获取token失败！"
+        }
+      }
+      else {
+        //access_token
+        const access_token = tokenres.data.access_token
+        //获取jsapi_ticket
+        const ticketUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsap";
+        const ticketres = await ctx.url(ticketUrl, { dataType: "json" });
+        if (ticketres.data.errcode == 0) {
+          const ticket = ticketres.data.ticket;
+          //存入数据库
+          const updateform = {
+            id: 1,
+            access_token: access_token,
+            jsapi_ticket: ticket,
+            access_tokenAt: this.app.mysql.literals.now
+          }
+          const updresult = await this.app.mysql.update("company", updateform);
+          if (updresult.affectedRows > 0) {
+            const signres = sign(ticket, pageurl);
+            ctx.body = {
+              ...tip[200],
+              data: signres
+            }
+          }
+          else {
+            ctx.body = {
+              code: 0,
+              msg: "缓存数据失败"
+            }
+          }
+        }
+        else {
+          ctx.body = {
+            code: 0,
+            msg: "获取jsapi_ticket失败！"
+          }
+        }
+      }
+    }
+    else {
+      //存在access_token
+      const ticket = result[0].jsapi_ticket;
+      console.log(sign(ticket, pageurl));
+      const signres = sign(ticket, pageurl);
+      ctx.body = {
+        ...tip[200],
+        data: signres
+      }
+    }
   }
   /**
    * 验证号码是否存在
