@@ -42,6 +42,7 @@ var sign = function (jsapi_ticket, url) {
     var string1 = raw(ret);
     shaObj = new jsSHA(string1, 'TEXT');
     ret.signature = shaObj.getHash('SHA-1', 'HEX');
+    ret.appId = "wx1124be6bc1512298";
 
     return ret;
 };

@@ -690,7 +690,7 @@ class AppController extends Controller {
       if (tokenres.data.errcode) {
         ctx.body = {
           code: 0,
-          msg: "获取token失败！"
+          msg: "获取token失败！=》"+JSON.stringify(tokenres.data)
         }
       }
       else {
@@ -726,7 +726,7 @@ class AppController extends Controller {
         else {
           ctx.body = {
             code: 0,
-            msg: "获取jsapi_ticket失败！"
+            msg: "获取jsapi_ticket失败！=>"+JSON.stringify(ticketres.data)
           }
         }
       }
