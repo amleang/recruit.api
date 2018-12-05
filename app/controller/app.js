@@ -697,7 +697,7 @@ class AppController extends Controller {
         //access_token
         const access_token = tokenres.data.access_token
         //获取jsapi_ticket
-        const ticketUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsap&offset_type=1";
+        const ticketUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsapi&offset_type=1";
         const ticketres = await ctx.curl(ticketUrl, { dataType: "json" });
         if (ticketres.data.errcode == 0) {
           const ticket = ticketres.data.ticket;
