@@ -45,9 +45,5 @@ module.exports = appInfo => {
   config.multipart = {
     fileSize: '20mb'
   }
-  config.logger = {
-    level: 'DEBUG',
-    allowDebugAtProd: true,
-  }
   return config;
 };
