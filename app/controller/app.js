@@ -679,6 +679,7 @@ class AppController extends Controller {
   async getwxshare() {
     debugger
     const ctx = this.ctx;
+    ctx.app.logger.info("info=>");
     const form = ctx.request.body;
     const pageurl = form.url;
     //获取企业中的ticket是否过期
