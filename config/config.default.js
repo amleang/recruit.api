@@ -5,11 +5,11 @@ module.exports = appInfo => {
 
   // use for cookie sign key, should change to your own and keep security
   config.keys = appInfo.name + '_1537494664130_6476';
-  config.cluster ={
+  config.cluster = {
     listen: {
       port: 7001,
       /* hostname: '192.168.0.110', */
-      hostname:"127.0.0.1"
+      hostname: "127.0.0.1"
       // path: '/var/run/egg.sock',
     }
   }
@@ -44,6 +44,10 @@ module.exports = appInfo => {
   }
   config.multipart = {
     fileSize: '20mb'
+  }
+  config.logger = {
+    level: 'DEBUG',
+    allowDebugAtProd: true,
   }
   return config;
 };

@@ -687,10 +687,11 @@ class AppController extends Controller {
       //获取access_token
       const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972";
       const tokenres = await ctx.curl(tokenUrl, { dataType: "json" });
+      ctx.app.logger.info("tokenres=>", tokenres);
       if (tokenres.data.errcode) {
         ctx.body = {
           code: 0,
-          msg: "获取token失败！=》"+JSON.stringify(tokenres.data)
+          msg: "获取token失败！=》" + JSON.stringify(tokenres.data)
         }
       }
       else {
@@ -699,6 +700,7 @@ class AppController extends Controller {
         //获取jsapi_ticket
         const ticketUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsap";
         const ticketres = await ctx.url(ticketUrl, { dataType: "json" });
+        ctx.app.logger.info("ticketres=>", ticketres);
         if (ticketres.data.errcode == 0) {
           const ticket = ticketres.data.ticket;
           //存入数据库
@@ -709,6 +711,7 @@ class AppController extends Controller {
             access_tokenAt: this.app.mysql.literals.now
           }
           const updresult = await this.app.mysql.update("company", updateform);
+          ctx.app.logger.info("updresult=>", updresult);
           if (updresult.affectedRows > 0) {
             const signres = sign(ticket, pageurl);
             ctx.body = {
@@ -726,7 +729,7 @@ class AppController extends Controller {
         else {
           ctx.body = {
             code: 0,
-            msg: "获取jsapi_ticket失败！=>"+JSON.stringify(ticketres.data)
+            msg: "获取jsapi_ticket失败！=>" + JSON.stringify(ticketres.data)
           }
         }
       }
