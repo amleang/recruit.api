@@ -679,7 +679,6 @@ class AppController extends Controller {
   async getwxshare() {
     debugger
     const ctx = this.ctx;
-    ctx.app.logger.info("info=>");
     const form = ctx.request.body;
     const pageurl = form.url;
     //获取企业中的ticket是否过期
@@ -688,7 +687,6 @@ class AppController extends Controller {
       //获取access_token
       const tokenUrl = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=wx1124be6bc1512298&secret=091885925a2232c6b7bf89f2eed30972";
       const tokenres = await ctx.curl(tokenUrl, { dataType: "json" });
-      ctx.app.logger.info("tokenres=>", tokenres);
       if (tokenres.data.errcode) {
         ctx.body = {
           code: 0,
@@ -700,8 +698,7 @@ class AppController extends Controller {
         const access_token = tokenres.data.access_token
         //获取jsapi_ticket
         const ticketUrl = "https://api.weixin.qq.com/cgi-bin/ticket/getticket?access_token=" + access_token + "&type=jsap";
-        const ticketres = await ctx.url(ticketUrl, { dataType: "json" });
-        ctx.app.logger.info("ticketres=>", ticketres);
+        const ticketres = await ctx.curl(ticketUrl, { dataType: "json" });
         if (ticketres.data.errcode == 0) {
           const ticket = ticketres.data.ticket;
           //存入数据库
@@ -712,7 +709,6 @@ class AppController extends Controller {
             access_tokenAt: this.app.mysql.literals.now
           }
           const updresult = await this.app.mysql.update("company", updateform);
-          ctx.app.logger.info("updresult=>", updresult);
           if (updresult.affectedRows > 0) {
             const signres = sign(ticket, pageurl);
             ctx.body = {
