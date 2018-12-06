@@ -12,6 +12,7 @@ module.exports = app => {
   require('./routers/bank')(app);
   require("./routers/crm")(app);
   require("./routers/cashback")(app);
+  require("./routers/home")(app);
   const { router, controller } = app;
   router.post("/api/upload", controller.upload.upload);
   /**纠错 */
