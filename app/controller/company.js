@@ -48,6 +48,7 @@ class CompanyController extends Controller {
     }
 
     async update() {
+        debugger
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;

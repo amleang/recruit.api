@@ -743,6 +743,23 @@ class AppController extends Controller {
     }
   }
   /**
+   * 获取app版本号
+   */
+  async getver() {
+    const ctx = this.ctx;
+    const result = this.app.mysql.query("select * from company");
+    if (result) {
+      const from = {
+        ver: result.ver,
+        apk: "http://www.szdejurenhe.com/wgt/djrh.wgt"
+      }
+      ctx.body = {
+        ...tip[200],
+        data: from
+      }
+    }
+  }
+  /**
    * 验证号码是否存在
    * @param {*} code 
    * @param {*} unionid 

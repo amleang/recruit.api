@@ -43,4 +43,6 @@ module.exports = app => {
     app.router.get("/api/app/oathuser", app.controller.app.oathuser);
     /**微信分享信息 */
     app.router.post("/api/app/getwxshare",app.controller.app.getwxshare);
+    /**检测版本号 */
+    app.router.get("/api/app/ver",app.controller.app.getver);
 }
