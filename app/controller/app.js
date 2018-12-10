@@ -747,7 +747,7 @@ class AppController extends Controller {
    */
   async getver() {
     const ctx = this.ctx;
-    const result = this.app.mysql.query("select * from company");
+    const result =await this.app.mysql.query("select * from company");
     if (result) {
       const from = {
         ver: result,
