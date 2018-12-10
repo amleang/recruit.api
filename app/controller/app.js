@@ -750,7 +750,7 @@ class AppController extends Controller {
     const result =await this.app.mysql.query("select * from company");
     if (result) {
       const from = {
-        ver: result,
+        ver: result.ver,
         apk: "http://www.szdejurenhe.com/wgt/djrh.wgt"
       }
       ctx.body = {
