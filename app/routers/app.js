@@ -45,4 +45,7 @@ module.exports = app => {
     app.router.post("/api/app/getwxshare",app.controller.app.getwxshare);
     /**检测版本号 */
     app.router.get("/api/app/ver",app.controller.app.getver);
+    /**获取下载文件名称 */
+    app.router.get("/api/app/downloadname",app.controller.app.downloadname);
+    
 }

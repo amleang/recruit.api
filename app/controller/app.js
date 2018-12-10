@@ -747,15 +747,28 @@ class AppController extends Controller {
    */
   async getver() {
     const ctx = this.ctx;
-    const result =await this.app.mysql.query("select * from company");
+    const result = await this.app.mysql.query("select * from company");
     if (result) {
       const from = {
         ver: result[0].ver,
-        apk: "http://www.szdejurenhe.com/wgt/djrh.wgt"
+        apk: "http://www.szdejurenhe.com/wgt/"+result[0].downloadname+".wgt"
       }
       ctx.body = {
         ...tip[200],
         data: from
+      }
+    }
+  }
+  /**
+   * 下载文件名称
+   */
+  async downloadname() {
+    const ctx = this.ctx;
+    const result = await this.app.mysql.query("select * from company");
+    if (result) {
+      ctx.body = {
+        ...tip[200],
+        data: result[0].downloadname
       }
     }
   }
