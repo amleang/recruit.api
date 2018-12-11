@@ -521,6 +521,7 @@ class AppController extends Controller {
     debugger
     const ctx = this.ctx;
     const form = ctx.request.body;
+    delete form.privilege;
     //根据unionid判断用户是否存在
     const resform = await this.app.mysql.get("wxuser", {
       unionid: form.unionid
@@ -533,7 +534,6 @@ class AppController extends Controller {
     if (resform) {
       resform.nickname = form.nickname;
       resform.headimgurl = name;
-      resform.updateAt = this.app.mysql.literals.now;
       const result = await this.app.mysql.update("wxuser", resform, { where: { unionid: resform.unionid } });
       if (result.affectedRows > 0) {
         delete resform.updateAt
@@ -577,7 +577,9 @@ class AppController extends Controller {
     debugger
     const ctx = this.ctx;
     const form = ctx.request.body;
+    delete form.privilege;
     form.status = 1;
+    form.updateAt = this.app.mysql.literals.now;
     const unionid = form.unionid, code = form.code, phone = form.phone;
     //先判断code是否正确
     const count = await this.app.mysql.query("select count(*) count from sendSms where unionid=? and sendCode=? and phone=? and TIMESTAMPDIFF(MINUTE,createAt,NOW())<=5", [unionid, code, phone]);
