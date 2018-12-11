@@ -398,27 +398,20 @@ class AppController extends Controller {
     let smsClient = new SMSClient({ accessKeyId, secretAccessKey });
     const that = this;
     //短信发送
-    smsClient.sendSMS({
+    await smsClient.sendSMS({
       PhoneNumbers: phone,
       SignName: "苏州德聚仁合信息服务",
       TemplateCode: "SMS_151771937",
       TemplateParam: '{"code":"' + code + '"}'
     }).then(function (res) {
-      if (res == "OK") {
+      debugger;
+      if (res.Code == "OK") {
         //发送成功
         //修改验证码状态
         const uresult = that.app.mysql.query("update sendSms set status=1 where id=?", [resid]);
-        if (uresult.affectedRows > 0) {
-          ctx.body = {
-            ...tip[200],
-            data: code
-          }
-        }
-        else {
-          ctx.body = {
-            code: 0,
-            msg: "验证码发送失败"
-          }
+        ctx.body = {
+          ...tip[200],
+          data: code
         }
       }
       else {
@@ -429,6 +422,7 @@ class AppController extends Controller {
         }
       }
     }, function (err) {
+      debugger
       //接口调用失败
       ctx.body = {
         code: 0,
@@ -436,7 +430,6 @@ class AppController extends Controller {
       }
     })
   }
-
   /**
    * 修改用户手机号
    */
@@ -753,7 +746,7 @@ class AppController extends Controller {
     if (result) {
       const from = {
         ver: result[0].ver,
-        apk: "http://www.szdejurenhe.com/app/"+result[0].downloadname+".apk"
+        apk: "http://www.szdejurenhe.com/app/" + result[0].downloadname + ".apk"
       }
       ctx.body = {
         ...tip[200],
