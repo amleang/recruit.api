@@ -751,7 +751,7 @@ class AppController extends Controller {
     if (result) {
       const from = {
         ver: result[0].ver,
-        apk: "http://www.szdejurenhe.com/wgt/"+result[0].downloadname+".apk"
+        apk: "http://www.szdejurenhe.com/app/"+result[0].downloadname+".apk"
       }
       ctx.body = {
         ...tip[200],
