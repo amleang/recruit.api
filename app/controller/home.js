@@ -13,7 +13,6 @@ class HomeController extends Controller {
      * 首页报表数据
      */
     async report() {
-        debugger
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;

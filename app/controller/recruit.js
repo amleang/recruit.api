@@ -64,6 +64,7 @@ class RecruitController extends Controller {
      * 插入
      */
     async inset() {
+        debugger;
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;

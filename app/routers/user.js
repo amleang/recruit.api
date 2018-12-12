@@ -4,6 +4,8 @@ module.exports = app => {
     app.router.get("/api/user/wxuser",app.controller.user.wxuser);
     app.router.get("/api/user", app.controller.user.list);
     app.router.get("/api/user/:id", app.controller.user.item);
+    app.router.post("/api/user/updpwd", app.controller.user.updatepwd);
     app.router.post("/api/user", app.controller.user.inset);
     app.router.put("/api/user", app.controller.user.update);
+    app.router.delete("/api/user/:id", app.controller.user.del);
 }

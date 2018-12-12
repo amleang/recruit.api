@@ -73,15 +73,15 @@ class UserController extends Controller {
 
         const where = whereObject(params);
         const countWhere = sqlWhereCount("user", where);
- /*        const results = await this.app.mysql.select("user", {
-            where: where,
-            orders: [
-                ['role', 'asc'],
-                ['createAt', 'desc']
-            ],
-            limit: params.size,
-            offset: offset
-        }); */
+        /*        const results = await this.app.mysql.select("user", {
+                   where: where,
+                   orders: [
+                       ['role', 'asc'],
+                       ['createAt', 'desc']
+                   ],
+                   limit: params.size,
+                   offset: offset
+               }); */
         const count = await this.app.mysql.query(countWhere);
         const sql = sqlWhere("user", where, [['role', 'asc'], ['createAt', 'desc']], [offset, params.size,]);
         const results = await this.app.mysql.query(sql);
@@ -164,15 +164,63 @@ class UserController extends Controller {
             };
         }
     }
-
-    /**
-     * 微信用户列表
-     */
-    async wxuser(){
+    async del() {
+        debugger
         const ctx = this.ctx;
         if (!cookiesValid(ctx))
             return;
-            const params = ctx.query;
+        const id = ctx.params.id;
+        const result = await this.app.mysql.delete("user", { id: id });
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        } else {
+            ctx.body = {
+                ...tip[2004]
+            };
+        }
+    }
+    /**
+     * 修改密码
+     */
+    async updatepwd() {
+        debugger
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        form.oldpwd = md5(form.oldpwd);
+        form.pwd = md5(form.pwd);
+        const rescount = await this.app.mysql.query("select count(*) as count from `user` where id=? and userpwd=?", [form.id, form.oldpwd]);
+        if (rescount[0].count > 0) {
+            const result = await this.app.mysql.query("update `user` set userpwd=? where id=?", [form.pwd, form.id]);
+            if (result.affectedRows > 0) {
+                ctx.body = {
+                    ...tip[200]
+                };
+            } else {
+                ctx.body = {
+                    code: 0,
+                    msg: "密码修改失败"
+                };
+            }
+        }
+        else {
+            ctx.body = {
+                code: 0,
+                msg: "您输入的旧密码不正确"
+            };
+        }
+    }
+    /**
+     * 微信用户列表
+     */
+    async wxuser() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const params = ctx.query;
         params.page = params.page || 1;
         params.size = params.size || 10;
         let offset = (params.page - 1) * params.size;
