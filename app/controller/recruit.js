@@ -133,7 +133,7 @@ class RecruitController extends Controller {
         }
     }
     /**
-     * 修改状态
+     * 修改活动状态
      */
     async active() {
         debugger;
@@ -154,7 +154,28 @@ class RecruitController extends Controller {
             };
         }
     }
-
+    /**
+     * 状态
+     */
+    async status(){
+        debugger;
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const id = ctx.query.id;
+        const status = ctx.query.status;
+        const result = await this.app.mysql.query("update recruit set status=? where id=?", [status, id]);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        }
+        else {
+            ctx.body = {
+                ...tip[2003]
+            };
+        }
+    }
     /**招工纠错列表 */
     async correction() {
         const ctx = this.ctx;

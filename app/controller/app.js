@@ -15,10 +15,12 @@ class AppController extends Controller {
    * 获取首页recruit列表
    */
   async recruit() {
+
     const ctx = this.ctx;
     const params = ctx.query;
     params.page = params.page || 1;
     params.size = params.size || 10;
+    params.status = 1;
     let offset = (params.page - 1) * params.size;
     const where = whereObject(params);
     const countWhere = sqlWhereCount("recruit", where);

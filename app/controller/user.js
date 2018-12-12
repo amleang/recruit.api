@@ -236,6 +236,23 @@ class UserController extends Controller {
             count: count[0].count
         };
     }
+    async setwxuser() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        const result=await this.app.mysql.query("update wxuser set isblacklist=? where unionid=?",[form.type,form.unionid]);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        } else {
+            ctx.body = {
+                code: 0,
+                msg: "设置失败"
+            };
+        }
+    }
     /**
      * 获取邀请码
      */
