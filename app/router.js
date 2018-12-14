@@ -18,5 +18,4 @@ module.exports = app => {
   /**纠错 */
   router.get("/api/correction", controller.recruit.correction);
   router.get("/api/correction/:id", controller.recruit.correctionitem)
-
 };

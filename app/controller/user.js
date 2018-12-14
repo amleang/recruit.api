@@ -214,6 +214,27 @@ class UserController extends Controller {
         }
     }
     /**
+     * 重置密码
+     */
+    async resetpwd() {
+        const ctx = this.ctx;
+        if (!cookiesValid(ctx))
+            return;
+        const form = ctx.request.body;
+        form.pwd = md5(form.pwd);
+        const result = await this.app.mysql.query("update `user` set userpwd=? where id=?", [form.pwd, form.id]);
+        if (result.affectedRows > 0) {
+            ctx.body = {
+                ...tip[200]
+            };
+        } else {
+            ctx.body = {
+                code: 0,
+                msg: "重置密码失败"
+            };
+        }
+    }
+    /**
      * 微信用户列表
      */
     async wxuser() {
@@ -241,7 +262,7 @@ class UserController extends Controller {
         if (!cookiesValid(ctx))
             return;
         const form = ctx.request.body;
-        const result=await this.app.mysql.query("update wxuser set isblacklist=? where unionid=?",[form.type,form.unionid]);
+        const result = await this.app.mysql.query("update wxuser set isblacklist=? where unionid=?", [form.type, form.unionid]);
         if (result.affectedRows > 0) {
             ctx.body = {
                 ...tip[200]

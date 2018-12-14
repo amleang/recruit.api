@@ -4,7 +4,8 @@ const sign = require('../lib/sign.js');
 const {
   whereObject,
   sqlWhereCount,
-  sqlWhere
+  sqlWhere,
+  intercept
 } = require("../lib/utils")
 const SMSClient = require('@alicloud/sms-sdk')
 const axios = require("axios")
@@ -18,6 +19,8 @@ class AppController extends Controller {
 
     const ctx = this.ctx;
     const params = ctx.query;
+    if (!intercept(this))
+      return;
     params.page = params.page || 1;
     params.size = params.size || 10;
     params.status = 1;
@@ -58,6 +61,8 @@ class AppController extends Controller {
    */
   async recruititem() {
     const ctx = this.ctx;
+    if (!intercept(this))
+      return;
     const id = ctx.query.id;
     const form = await this.app.mysql.get("recruit", {
       id: id
@@ -138,20 +143,22 @@ class AppController extends Controller {
    */
   async enroll() {
     const ctx = this.ctx;
+    if (!intercept(this))
+      return;
     const form = ctx.request.body;
     form.status = 0;
     let isFlag = true;
-    if (form.inviterCode) {
-      //判断是否存在
-      const count = await this.app.mysql.query("select count(*) as count from user where invitationCode='" + form.inviterCode + "'");
-      if (count.count == 0) {
-        isFlag = false;
-        ctx.body = {
-          code: 101,
-          msg: "您填写的邀请码不存在"
-        }
-      }
-    }
+    /*     if (form.inviterCode) {
+          //判断是否存在
+          const count = await this.app.mysql.query("select count(*) as count from user where invitationCode='" + form.inviterCode + "'");
+          if (count.count == 0) {
+            isFlag = false;
+            ctx.body = {
+              code: 101,
+              msg: "您填写的邀请码不存在"
+            }
+          }
+        } */
     if (isFlag) {
       form.createAt = this.app.mysql.literals.now;
       const result = await this.app.mysql.insert("enroll", form);
@@ -573,6 +580,9 @@ class AppController extends Controller {
     const ctx = this.ctx;
     const form = ctx.request.body;
     delete form.privilege;
+    const loginType = form.loginType;
+    delete form.loginType;
+    delete form.idCode;
     form.status = 1;
     form.updateAt = this.app.mysql.literals.now;
     const unionid = form.unionid, code = form.code, phone = form.phone;
@@ -582,19 +592,67 @@ class AppController extends Controller {
       const results = await this.app.mysql.query("update sendSms set status=2 where unionid=? and sendCode=?", [unionid, code]);
       if (results.affectedRows > 0) {
         delete form.code;
-        const result = await this.app.mysql.update("wxuser", form, { where: { unionid: form.unionid } });
-        if (result.affectedRows > 0) {
-          ctx.body = {
-            ...tip[200],
-            data: "ok"
-          };
+
+        if (loginType == 0) {
+          //微信注册
+          //手机号校验下是否存在
+          const resultphone = await this.app.mysql.get("wxuser", { phone: form.phone });
+          if (resultphone) {
+            if (resultphone.unionid2 != form.unionid2) {
+              await this.app.mysql.delete('wxuser', { unionid: form.unionid });
+            }
+            ctx.body = {
+              ...tip[200],
+              data: resultphone
+            };
+          }
+          else {
+            const result = await this.app.mysql.update("wxuser", form, { where: { unionid: form.unionid } });
+            if (result.affectedRows > 0) {
+              ctx.body = {
+                ...tip[200],
+                data: "ok"
+              };
+            }
+            else {
+              ctx.body = {
+                code: 0,
+                msg: "注册用户资料失败！"
+              };
+            }
+          }
+
         }
         else {
-          ctx.body = {
-            code: 0,
-            msg: "注册用户资料失败！"
-          };
+          //手机注册
+          //根据手机号 判断是否存在改记录信息
+          //const resultselect=await this.app.mysql.query("select * from wxuser where phone=?",[form.phone]);
+          const resultselect = await this.app.mysql.get('wxuser', { phone: form.phone });
+          if (resultselect) {
+            ctx.body = {
+              ...tip[200],
+              data: form
+            };
+          }
+          else {
+            form.createAt = this.app.mysql.literals.now;
+            const result = await this.app.mysql.insert("wxuser", form);
+            if (result.affectedRows > 0) {
+              ctx.body = {
+                ...tip[200],
+                data: form
+              };
+            }
+            else {
+              ctx.body = {
+                code: 0,
+                msg: "保存用户资料失败！"
+              };
+            }
+          }
         }
+
+
       }
       else {
         ctx.body = {
@@ -674,7 +732,6 @@ class AppController extends Controller {
    * 获取微信分享的信息
    */
   async getwxshare() {
-    debugger
     const ctx = this.ctx;
     const form = ctx.request.body;
     const pageurl = form.url;
@@ -737,6 +794,13 @@ class AppController extends Controller {
         ...tip[200],
         data: signres
       }
+    }
+  }
+  async close() {
+    let status = this.ctx.query.status;
+    this.app.isClose = status ? status : false;
+    this.ctx.body = {
+      ...tip[200]
     }
   }
   /**

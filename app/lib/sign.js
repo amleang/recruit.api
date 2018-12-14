@@ -32,7 +32,6 @@ var raw = function (args) {
 * @returns
 */
 var sign = function (jsapi_ticket, url) {
-    debugger
     var ret = {
         jsapi_ticket: jsapi_ticket,
         nonceStr: createNonceStr(),

@@ -6,6 +6,7 @@ module.exports = app => {
     app.router.get("/api/user/:id", app.controller.user.item);
     app.router.post("/api/user/setwxuser",app.controller.user.setwxuser);
     app.router.post("/api/user/updpwd", app.controller.user.updatepwd);
+    app.router.post("/api/user/resetpwd",app.controller.user.resetpwd);
     app.router.post("/api/user", app.controller.user.inset);
     app.router.put("/api/user", app.controller.user.update);
     app.router.delete("/api/user/:id", app.controller.user.del);

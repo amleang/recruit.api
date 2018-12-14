@@ -74,9 +74,20 @@ const sqlWhereCount = function (tableName, clumns) {
     return countSql;
 }
 
+const intercept = function (that) {
+    if (that.app.isClose=="true") {
+        that.ctx.body = {
+            code: 0,
+            msg: "接口已经停用"
+        };
+        return false
+    }
+    return true;
+}
 module.exports = {
     cookiesValid,
     whereObject,
     sqlWhereCount,
-    sqlWhere
+    sqlWhere,
+    intercept
 }
