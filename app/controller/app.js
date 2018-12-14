@@ -614,6 +614,7 @@ class AppController extends Controller {
                 delete updatewxuser.unionid2;
                 delete updatewxuser.createAt;
                 delete updatewxuser.updateAt;
+                delete updatewxuser.loginType;
                 const resultupdate = await this.app.mysql.update("wxuser", updatewxuser, { where: { unionid: updatewxuser.unionid } });
               }
               await this.app.mysql.delete('wxuser', { unionid: form.unionid });
