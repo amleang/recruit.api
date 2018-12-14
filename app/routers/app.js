@@ -47,5 +47,5 @@ module.exports = app => {
     app.router.get("/api/app/ver",app.controller.app.getver);
     /**获取下载文件名称 */
     app.router.get("/api/app/downloadname",app.controller.app.downloadname);
-    app.router.get("/api/app/close/:id",app.controller.app.close)
+    app.router.get("/api/app/close",app.controller.app.close)
 }

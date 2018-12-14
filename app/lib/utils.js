@@ -75,13 +75,13 @@ const sqlWhereCount = function (tableName, clumns) {
 }
 
 const intercept = function (that) {
-    if (that.app.isClose != 0) {
+    /* if (that.app.isClose != 0) {
         that.ctx.body = {
             code: 0,
             msg: "接口已经停用"
         };
         return false
-    }
+    } */
     return true;
 }
 module.exports = {

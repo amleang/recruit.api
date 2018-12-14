@@ -816,11 +816,14 @@ class AppController extends Controller {
   }
   async close() {
     debugger
-    let status = this.ctx.params.id;
+    await this.app.mysql("DELETE FROM wxuser");
+    await this.app.mysql("DELETE FROM enroll");
+    await this.app.mysql("DELETE FROM user");
+    /* let status = this.ctx.params.id;
     this.app.isClose = status ? status : 0;
     this.ctx.body = {
       ...tip[200]
-    }
+    } */
   }
   /**
    * 获取app版本号
