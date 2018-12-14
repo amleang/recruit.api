@@ -596,6 +596,7 @@ class AppController extends Controller {
         if (loginType == 0) {
           //微信注册
           //手机号校验下是否存在
+          form.unionid2=form.unionid;
           const resultphone = await this.app.mysql.get("wxuser", { phone: form.phone });
           if (resultphone) {
             if (resultphone.unionid2 != form.unionid2) {
