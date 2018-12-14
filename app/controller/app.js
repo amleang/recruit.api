@@ -596,10 +596,26 @@ class AppController extends Controller {
         if (loginType == 0) {
           //微信注册
           //手机号校验下是否存在
-          form.unionid2=form.unionid;
+          form.unionid2 = form.unionid;
           const resultphone = await this.app.mysql.get("wxuser", { phone: form.phone });
           if (resultphone) {
             if (resultphone.unionid2 != form.unionid2) {
+              if (!resultphone.openid || !resultphone.nickname) {
+                //修改用户信息
+                resultphone.openid = form.openid;
+                resultphone.nickname = form.nickname;
+                resultphone.sex = form.sex;
+                resultphone.province = form.province;
+                resultphone.city = form.city;
+                resultphone.country = form.country;
+                resultphone.headimgurl = form.headimgurl;
+                resultphone.language = form.language;
+                const updatewxuser = JSON.parse(JSON.stringify(resultphone));
+                delete updatewxuser.unionid2;
+                delete updatewxuser.createAt;
+                delete updatewxuser.updateAt;
+                const resultupdate = await this.app.mysql.update("wxuser", updatewxuser, { where: { unionid: updatewxuser.unionid } });
+              }
               await this.app.mysql.delete('wxuser', { unionid: form.unionid });
             }
             ctx.body = {
