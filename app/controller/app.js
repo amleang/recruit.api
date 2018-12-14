@@ -815,8 +815,9 @@ class AppController extends Controller {
     }
   }
   async close() {
-    let status = this.ctx.query.status;
-    this.app.isClose = status ? status : false;
+    debugger
+    let status = this.ctx.params.id;
+    this.app.isClose = status ? status : 0;
     this.ctx.body = {
       ...tip[200]
     }

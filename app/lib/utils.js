@@ -75,7 +75,7 @@ const sqlWhereCount = function (tableName, clumns) {
 }
 
 const intercept = function (that) {
-    if (that.app.isClose=="true") {
+    if (that.app.isClose != 0) {
         that.ctx.body = {
             code: 0,
             msg: "接口已经停用"
