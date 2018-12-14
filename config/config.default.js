@@ -32,6 +32,7 @@ module.exports = appInfo => {
       // host
      /*  host: '47.94.108.191', */
       host:"127.0.0.1",
+      
       // 端口号
       port: '3306',
       // 用户名
