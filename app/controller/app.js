@@ -28,7 +28,7 @@ class AppController extends Controller {
     const where = whereObject(params);
     const countWhere = sqlWhereCount("recruit", where);
     const count = await this.app.mysql.query(countWhere);
-    const sql = sqlWhere("recruit", where, [['active', 'desc'], ["isTop", "desc"]], [offset, params.size]);
+    const sql = sqlWhere("recruit", where, [['active', 'desc'], ["isTop", "desc"],["weight","desc"]], [offset, params.size]);
     const results = await this.app.mysql.query(sql);
     ctx.body = {
       ...tip[200],
