@@ -28,7 +28,7 @@ class AppController extends Controller {
     const where = whereObject(params);
     const countWhere = sqlWhereCount("recruit", where);
     const count = await this.app.mysql.query(countWhere);
-    const sql = sqlWhere("recruit", where, [['active', 'desc'], ["isTop", "desc"],["weight","desc"]], [offset, params.size]);
+    const sql = sqlWhere("recruit", where, [['active', 'desc'], ["isTop", "desc"], ["weight", "desc"]], [offset, params.size]);
     const results = await this.app.mysql.query(sql);
     ctx.body = {
       ...tip[200],
@@ -76,7 +76,7 @@ class AppController extends Controller {
         att = 1;
     }
     /**获取报名人数 */
-    const enrollresult = await this.app.mysql.query(" SELECT COUNT(*) as count from(select unionid from enroll where recruitid=? GROUP BY unionid) as t ", [id]);
+    const enrollresult = await this.app.mysql.query(" select COUNT(*) as count from enroll where recruitid=? ", [id]);
     form.signupCount = enrollresult[0].count;
     const result = await this.app.mysql.select("subsidy",
       {
@@ -163,8 +163,10 @@ class AppController extends Controller {
       form.createAt = this.app.mysql.literals.now;
       const result = await this.app.mysql.insert("enroll", form);
       if (result.affectedRows > 0) {
+        const enrollresult = await this.app.mysql.query(" select COUNT(*) as count from enroll where recruitid=? ", [form.recruitid]);
         ctx.body = {
-          ...tip[200]
+          ...tip[200],
+          count: enrollresult[0].count
         };
       } else {
         ctx.body = {
