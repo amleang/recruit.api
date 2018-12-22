@@ -66,6 +66,41 @@ class HomeController extends Controller {
             data: data
         };
     }
+    /**
+     * 获取系统时间
+     */
+    async systime() {
+        const ctx = this.ctx;
+        const result = await this.app.mysql.query("select sysdate() as time");
+        ctx.body = {
+            ...tip[200],
+            data: result[0].time
+        }
+    }
+    /**
+     * 根据时间获取是否有新的报名信息
+     */
+    async getmsg() {
+        debugger
+        const ctx = this.ctx;
+        const time = ctx.query.time;
+        const resultcount = await this.app.mysql.query("select count(*) as count from enroll where createAt>?", [time]);
+        const count = resultcount[0].count;
+        if (count > 0) {
+            const result = await this.app.mysql.query("select * from v_enroll where createAt>? order by createAt desc LIMIT 0,1", [time]);
+            ctx.body = {
+                ...tip[200],
+                count: count,
+                data: result[0]
+            }
+        }
+        else {
+            ctx.body = {
+                ...tip[200],
+                count: count
+            }
+        }
+    }
 }
 
 module.exports = HomeController;
