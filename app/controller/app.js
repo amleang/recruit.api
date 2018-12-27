@@ -265,33 +265,17 @@ class AppController extends Controller {
   async recommend() {
     const ctx = this.ctx;
     let form = ctx.request.body;
-    const unionid = form.unionid;
-    const phone = form.phone;
-    const item = await this.app.mysql.get("recommend", {
-      unionid: unionid,
-      phone: phone
-    });
-    if (item) {
+    form.createAt = this.app.mysql.literals.now;
+    const result = await this.app.mysql.insert("recommend", form);
+    if (result.affectedRows > 0) {
       ctx.body = {
-        code: 1001,
-        msg
+        ...tip[200],
+        id: result.insertId
       };
-      return;
-    }
-    else {
-      form.createAt = this.app.mysql.literals.now;
-      const result = await this.app.mysql.insert("recommend", form);
-
-      if (result.affectedRows > 0) {
-        ctx.body = {
-          ...tip[200],
-          id: result.insertId
-        };
-      } else {
-        ctx.body = {
-          ...tip[2002]
-        };
-      }
+    } else {
+      ctx.body = {
+        ...tip[2002]
+      };
     }
 
   }

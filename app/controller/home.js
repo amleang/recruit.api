@@ -81,7 +81,6 @@ class HomeController extends Controller {
      * 根据时间获取是否有新的报名信息
      */
     async getmsg() {
-        debugger
         const ctx = this.ctx;
         const time = ctx.query.time;
         const resultcount = await this.app.mysql.query("select count(*) as count from enroll where createAt>?", [time]);

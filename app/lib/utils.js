@@ -61,10 +61,10 @@ const sqlWhereCount = function (tableName, clumns) {
     keys.forEach(key => {
         if (whereStr != "") {
             if (clumns[key])
-                whereStr += " AND " + key + "='" + clumns[key] + "'"
+                whereStr += " and " + key + " like '%" + clumns[key] + "%'";
         } else {
             if (clumns[key])
-                whereStr = key + "='" + clumns[key] + "'"
+                whereStr = key + " like '%" + clumns[key] + "%'"
         }
 
     })
